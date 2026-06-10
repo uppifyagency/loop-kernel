@@ -3,6 +3,8 @@
 #
 #   loop init [dir]     interview (goal · look-alikes · stack · skills · MCPs · review),
 #                       then print a paste-ready nested /goal. add --minimal for the bare check.
+#   loop nwave [name]   zero-setup: print the nWave kernel /goal — the 6-question intake
+#                       happens IN-conversation (WAVE 0), nothing written until you CONFIRM
 #   loop run  [dir]     drive the real agent on <project> until the check passes or it stops
 #   loop goal [dir]     print the ready-to-paste /goal for Claude Code
 #   loop ledger         show the durable memory of the most recent run
@@ -15,6 +17,22 @@ cmd="${1:-help}"; [ $# -gt 0 ] && shift || true
 case "$cmd" in
   init)
     exec "$INSTALL/init.sh" "$@"
+    ;;
+
+  nwave)
+    NAME="${1:-feature}"
+    f="$INSTALL/kernels/nwave.txt"
+    [ -f "$f" ] || { echo "missing $f" >&2; exit 1; }
+    out="$(sed "s|<NAME>|$NAME|g" "$f")"
+    n=$(printf '%s\n' "$out" | wc -c | tr -d ' ')
+    {
+      echo "▶ nWave kernel /goal for \"$NAME\" — $n chars incl. the '/goal ' prefix (condition limit: 4000)"
+      [ "$n" -gt 4006 ] && echo "  ⚠ over the limit — use a shorter feature name"
+      echo "  Paste into Claude Code; the intake interview happens in-conversation. Reply CONFIRMED to start."
+      echo "─────────────────────────  COPY FROM HERE  ─────────────────────────"
+    } >&2
+    printf '%s\n' "$out"
+    echo "──────────────────────────  TO HERE  ───────────────────────────────" >&2
     ;;
 
   run)
@@ -53,6 +71,6 @@ case "$cmd" in
     ;;
 
   help|--help|-h|*)
-    sed -n '2,10p' "$INSTALL/loop" | sed 's/^# \{0,1\}//'
+    sed -n '2,12p' "$INSTALL/loop" | sed 's/^# \{0,1\}//'
     ;;
 esac

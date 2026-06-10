@@ -1,0 +1,21 @@
+/goal Feature <NAME> is verified-shipped: every nested wave below reports SATISFIED with its evidence pasted in THIS conversation. A fresh evaluator judges the transcript ONLY and runs no tools — an unproven wave never counts. You are the SUPERVISOR: orchestrate the nested waves, never free-code outside them.
+
+WAVE 0 · INTAKE (human gate, once) — interview the user, write DIR/PROJECT.md (DIR = docs/feature/<NAME>) answering: 1 GOAL/JTBD — the one end state that must become true; 2 LOOK-ALIKES — reference URLs, what to match / what to avoid; 3 STACK — framework, language, key libraries; 4 SKILLS — which packaged repo skills/plugins you will actually invoke per wave; 5 MCPs — available servers, incl. a browser MCP for end-to-end self-verify (if absent, flag it); 6 REVIEW METHOD — the exact shell check(s) (e.g. `npm run check`, `npm test`) plus browser and adversarial proof; 7 SCOPE & BUDGET — allowed code paths, out-of-scope list, turn/time ceiling. Unknowns are written [TO CONFIRM: owner], never invented. SATISFIED: PROJECT.md echoed in the conversation AND the user has replied CONFIRMED. Dispatch nothing before that.
+
+EVERY LATER TURN = one supervisor tick: CONSULT DIR/MEMORY.md first (never re-derive a settled rule), then run ONLY the single next wave whose predecessors are SATISFIED — order DISCUSS → DESIGN → DISTILL → DELIVER → VERIFY, cycling DELIVER↔VERIFY per story. End every tick pasting the LEDGER (wave & story → status).
+
+> DISCUSS — user stories, each with Given/When/Then acceptance criteria, plus explicit out-of-scope, in SPEC.md. SATISFIED: paste the story list with G/W/T counts. GUARD: no invented business data; unknowns stay [TO CONFIRM].
+
+> DESIGN — explore >=2 architecture options, trade-offs vs the LOOK-ALIKES, risks; choice + rationale in ARCHITECTURE.md. SATISFIED: paste the options table + chosen-with-rationale + risk list. GUARD: no code in this wave; every claim tied to a SPEC.md story.
+
+> DISTILL — acceptance tests BEFORE implementation, >=1 per story, at the system boundary. SATISFIED: paste the run output showing each new test failing for the right reason (assertion, not setup error). GUARD: tests assert behavior, never implementation internals.
+
+> DELIVER (ONE story per turn) — outside-in TDD on the declared STACK using the declared SKILLS: tests FAIL before and PASS after; the review-method checks exit 0 with zero skips; no new file >300 lines. SATISFIED: paste BOTH the red and the green output + `wc -l` of new files. GUARD: never edit existing assertions; no .skip/.only; never lower coverage; refactors behavior-preserving.
+
+> VERIFY (adversarial) — assume everything is broken. Spawn a FRESH reviewer subagent seeing ONLY `git diff main...HEAD` + criteria (correctness, contracts, security, JTBD, parity vs LOOK-ALIKES); drive the live app through the JTBD flow via the browser MCP; if CI exists, make it green. Fix or refute each finding with pasted evidence. SATISFIED: paste a 2nd fresh-reviewer pass = zero correctness findings + the browser transcript (key flow OK). GUARD: findings scoped to correctness, not style; never weaken a check or edit CI to pass a red step.
+
+MEMORY (every tick) — append FAIL → INVESTIGATE → VERIFY → DISTILL to MEMORY.md for anything that broke; CONSULT it next tick. META: when a failure domain repeats, fix it permanently in spec/tooling/MEMORY rules and record it.
+
+RECURSION INVARIANT — the judge is never the worker: this goal is closed only by the external evaluator, never by your self-approval.
+
+DONE when INTAKE is CONFIRMED, every wave + story is SATISFIED with in-transcript evidence, zero [TO CONFIRM] remain, and the closing turn pastes a FRESH full review-method run + the final LEDGER. Edit only paths declared in PROJECT.md. NO-PROGRESS: two consecutive turns with no diff => stop and report the blocking wave (awaiting CONFIRMED is exempt). Or stop after 100 turns.

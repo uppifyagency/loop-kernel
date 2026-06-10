@@ -163,7 +163,7 @@ if contains browser "$REVIEW_METHOD"; then
   VERIF="$VERIF Boot the app ($PREVIEW_CMD) and drive $PREVIEW_URL through the chrome-devtools MCP on port 9222: exercise the key flow — $KEY_FLOW — and paste the browser-MCP transcript (HTTP 200 plus the flow visibly working), not a description of it."
 fi
 if contains adversarial "$REVIEW_METHOD" || contains all "$REVIEW_METHOD"; then
-  VERIF="$VERIF Spawn a FRESH reviewer subagent that sees ONLY the diff (git diff main...HEAD) and the criteria (correctness, broken contracts, security, parity vs the look-alikes in .loop/PROJECT.md); fix or refute each finding with evidence pasted here; SATISFIED needs a second fresh pass reporting zero correctness findings."
+  VERIF="$VERIF Spawn a FRESH reviewer subagent that sees ONLY the diff (git diff main...HEAD) and the criteria (correctness, broken contracts, security, the JTBD, parity vs the look-alikes in .loop/PROJECT.md); fix or refute each finding with evidence pasted here; SATISFIED needs a second fresh pass reporting zero correctness findings."
 fi
 
 # Suggest the browser MCP install line if the user wants browser review but it is not wired.
@@ -244,7 +244,8 @@ skills/plugins: $SKILLS. Use these MCPs: $MCPS.
 
 EACH TURN = one supervisor cycle over the NESTED loops. ROUTE: pick the single next loop whose
 predecessors are satisfied (order ARCHITECTURE -> CODING -> VERIFICATION, cycling
-CODING<->VERIFICATION per story). One loop per turn.
+CODING<->VERIFICATION per story). One loop per turn. End every turn pasting the LEDGER
+(loop & story -> status).
 
 > ARCHITECTURE LOOP — explore >=2 options for the goal, weigh trade-offs against the look-alikes
   in PROJECT.md, name the risks, and document the chosen design + rationale in
@@ -252,9 +253,9 @@ CODING<->VERIFICATION per story). One loop per turn.
   GUARD: no code here; every claim tied to a PROJECT.md requirement.
 
 > CODING LOOP (one story per turn, on the $STACK stack) — for the single next story: write tests
-  that FAIL before and PASS after; implement the smallest change; no in-scope file over 300
-  lines. SATISFIED: paste BOTH the red and the green output. GUARD: never edit existing
-  assertions; no .skip/.only; do not lower coverage; refactor behavior-preserving.
+  that FAIL before and PASS after; implement the smallest change; no new file over 300 lines.
+  SATISFIED: paste BOTH the red and the green output + wc -l of new files. GUARD: never edit
+  existing assertions; no .skip/.only; do not lower coverage; refactor behavior-preserving.
 
 > VERIFICATION LOOP (adversarial, the judge is never the worker) — $VERIF
   GUARD: correctness and security, not style; never weaken a check or edit CI to skip a red step.
@@ -267,9 +268,10 @@ RECURSION INVARIANT — the judge is never the worker: the Verification loop use
 subagents; this whole goal is closed by the fresh evaluator, never by your self-approval.
 
 DONE only when ARCHITECTURE + every story's CODING + VERIFICATION are SATISFIED with evidence in
-the transcript, and every [TO CONFIRM] in PROJECT.md is resolved. Constraints: edit only under
-this feature's paths. NO-PROGRESS: if two turns produce no diff, stop and report the blocking
-loop. Or stop after $MAX_ITERS turns.
+the transcript, every [TO CONFIRM] in PROJECT.md is resolved, and the closing turn pastes a FRESH
+full check run + the final LEDGER. Constraints: edit only under this feature's paths.
+NO-PROGRESS: if two turns produce no diff, stop and report the blocking loop. Or stop after
+$MAX_ITERS turns.
 EOF
 
 # Guard the official /goal limit (≤ 4000 chars).

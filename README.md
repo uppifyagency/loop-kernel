@@ -9,6 +9,9 @@
   <code>loop init</code> interviews you about the job, then prints a ready-to-paste <code>/goal</code> —
   nested loops, an unfakeable check, three hard stops, durable memory — that runs itself until it's
   verified-shipped or a guardrail stops it.<br>
+  Zero setup? <code>loop nwave &lt;name&gt;</code> prints a self-contained <code>/goal</code> that runs
+  the interview <i>in-conversation</i> and drives a full SDLC — requirements → architecture →
+  acceptance tests → TDD → adversarial verify.<br>
   No framework, no dependencies, ~110 lines of bash.
 </p>
 
@@ -81,6 +84,36 @@ scope, legal) lives in `PROJECT.md`, so the `/goal` stays under the official 4,0
 
 > Just want the bare check, no orchestration? `./loop init <dir> --minimal` is the original
 > five-question intake (goal + check command + caps).
+
+## Zero setup: the nWave kernel `/goal` (one paste, full SDLC)
+
+```bash
+./loop nwave quote-pdf
+```
+
+Prints a single, self-contained `/goal` (3,938 chars — under the official 4,000 limit, verified
+with `wc -c`) that condenses the [nWave](https://github.com/nWave-ai/nWave) seven-wave methodology
+into **five nested waves the supervisor routes through**, one per turn:
+
+```
+WAVE 0 · INTAKE   the six questions, asked IN-conversation; nothing runs until you reply CONFIRMED
+DISCUSS           user stories with Given/When/Then + explicit out-of-scope
+DESIGN            ≥2 architecture options, trade-offs vs your look-alikes, risks + rationale
+DISTILL           acceptance tests BEFORE code, failing for the right reason (ATDD)
+DELIVER           outside-in TDD, ONE story per turn — red + green output pasted
+VERIFY            fresh adversarial reviewer over the diff + live browser-MCP check + CI green
+```
+
+Where `loop init` interviews you in the terminal, `loop nwave` moves the interview **into the
+conversation** — paste one block, answer the intake, say `CONFIRMED`, walk away. Every wave must
+paste its evidence (a transcript-only evaluator closes the goal — an unproven wave never counts),
+a per-turn **LEDGER** keeps the judge's checklist alive across context compaction, and the closing
+turn must re-run all checks fresh.
+
+It ships **v1.1-hardened** from an adversarial first-principles review (five failure modes closed:
+intake-wait deadlock, evidence decay, undeclared edit paths, judge-invisible size rule, missing
+JTBD criterion) — the full review, the trust model, and the launch preconditions are in
+**[docs/NWAVE-KERNEL.md](docs/NWAVE-KERNEL.md)**.
 
 ## See it work first (30 seconds, no model, no cost)
 
@@ -184,6 +217,9 @@ This repo is deliberate about what it claims:
 
 ## Documentation
 
+- **[The nWave Kernel](docs/NWAVE-KERNEL.md)** — the zero-setup `/goal` printed by `loop nwave`:
+  wave-compression map, the v1.1 adversarial-review hardening, the trust model, launch
+  preconditions. *(EN.)*
 - **[The Loop Engineering Playbook](docs/GOAL-LOOP-PLAYBOOK.md)** — verified `/goal` & `/loop`
   prompts for every phase of code development, from a multi-source, adversarially-verified research
   run cross-checked against official Claude docs. *(IT, with English prompts.)*
@@ -196,6 +232,12 @@ This repo is deliberate about what it claims:
 **What exactly does `loop init` produce?** A `.loop/` folder (`PROJECT.md`, `MEMORY.md`, `score.sh`,
 `loop.env`) and a printed, paste-ready nested `/goal`. Paste it into Claude Code, or run it headless
 with `./loop run`.
+
+**`loop init` or `loop nwave`?** `init` interviews you in the terminal and wires the headless,
+kernel-scored runner (the check is unfakeable). `nwave` is one paste with the interview happening
+in-conversation and a full SDLC (stories → architecture → acceptance tests → TDD → adversarial
+verify) — but its judge reads only the transcript, so it is *trust-but-review*: supervise the
+first run. Details and trust model: [docs/NWAVE-KERNEL.md](docs/NWAVE-KERNEL.md).
 
 **How is this different from a Ralph loop?** Same external-loop spirit, but the three hard stops,
 an objective unfakeable check, durable memory, and a guided rich intake are first-class — not bolted on.
