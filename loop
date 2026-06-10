@@ -3,10 +3,13 @@
 #
 #   loop init [dir]     interview (goal · look-alikes · stack · skills · MCPs · review),
 #                       then print a paste-ready nested /goal. add --minimal for the bare check.
+#                       AI agents: do NOT run this bare — run `loop intake`, interview the
+#                       user in-conversation, then call init.sh with env vars (see AGENTS.md).
+#   loop intake         print the six-question interview + the env-var contract for agents
 #   loop nwave [name]   zero-setup: print the nWave kernel /goal — the 6-question intake
 #                       happens IN-conversation (WAVE 0), nothing written until you CONFIRM
 #   loop run  [dir]     drive the real agent on <project> until the check passes or it stops
-#   loop goal [dir]     print the ready-to-paste /goal for Claude Code
+#   loop goal [dir]     print the paste-ready /goal (add --plain for the agent-agnostic prompt)
 #   loop ledger         show the durable memory of the most recent run
 #   loop demo           prove the engine on a bundled example (no model, no cost)
 #   loop help
@@ -17,6 +20,10 @@ cmd="${1:-help}"; [ $# -gt 0 ] && shift || true
 case "$cmd" in
   init)
     exec "$INSTALL/init.sh" "$@"
+    ;;
+
+  intake)
+    cat "$INSTALL/templates/INTAKE.md"
     ;;
 
   nwave)
@@ -49,8 +56,16 @@ case "$cmd" in
     ;;
 
   goal)
-    PROJECT="${1:-$(pwd)}"; PROJECT="$(cd "$PROJECT" && pwd)"
+    PLAIN=0; PROJECT=""
+    for a in "$@"; do
+      case "$a" in
+        --plain|-p) PLAIN=1 ;;
+        *) [ -z "$PROJECT" ] && PROJECT="$a" ;;
+      esac
+    done
+    PROJECT="${PROJECT:-$(pwd)}"; PROJECT="$(cd "$PROJECT" && pwd)"
     f="$PROJECT/.loop/goal.txt"
+    [ "$PLAIN" -eq 1 ] && f="$PROJECT/.loop/prompt.txt"
     [ -f "$f" ] || { echo "No .loop config in $PROJECT — run: loop init \"$PROJECT\"" >&2; exit 1; }
     cat "$f"
     ;;
@@ -71,6 +86,6 @@ case "$cmd" in
     ;;
 
   help|--help|-h|*)
-    sed -n '2,12p' "$INSTALL/loop" | sed 's/^# \{0,1\}//'
+    sed -n '2,15p' "$INSTALL/loop" | sed 's/^# \{0,1\}//'
     ;;
 esac

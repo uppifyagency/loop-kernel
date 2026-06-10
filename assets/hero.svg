@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 440" width="1280" height="440" role="img" aria-label="loop-kernel — the simplest AI coding-agent loop that provably halts. Loop engineering: goal, an unfakeable verifier, three hard stops, durable memory.">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 440" width="1280" height="440" role="img" aria-label="loop-kernel — say “set up a loop” to your agent: it interviews you, then writes a self-driving loop that provably halts. Agent-native loop engineering: six questions, an unfakeable verifier, three hard stops, durable memory.">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#0a1020"/>
@@ -68,32 +68,45 @@
   </circle>
   <circle cx="1010" cy="220" r="6.5" fill="#eaf2ff"/>
 
+  <!-- ===================== THE PROMPT — what feeds the loop ===================== -->
+  <g>
+    <rect x="640" y="56" width="236" height="42" rx="21" fill="#0c1730" stroke="#243352"/>
+    <text x="660" y="83" font-family="'SFMono-Regular', 'JetBrains Mono', 'Fira Code', ui-monospace, monospace"
+          font-size="15" fill="#d7e1f4"><tspan fill="#34d399">❯</tspan> set up a loop</text>
+    <!-- dashed feed-line: natural language → the loop -->
+    <path d="M 878 80 C 908 86, 922 98, 921 118" fill="none" stroke="#7f93b8" stroke-width="1.6"
+          stroke-dasharray="4 5" opacity="0.75"/>
+    <polygon points="925,127 912,121 920,111" fill="#7f93b8" opacity="0.85"/>
+  </g>
+
   <!-- ============================== TEXT BLOCK ============================= -->
-  <text x="92" y="112" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+  <text x="92" y="104" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
         font-size="17" letter-spacing="5.5" fill="#7f93b8" font-weight="600">LOOP ENGINEERING · 2026</text>
 
-  <text x="88" y="214" font-family="'SFMono-Regular', 'JetBrains Mono', 'Fira Code', ui-monospace, monospace"
+  <text x="88" y="196" font-family="'SFMono-Regular', 'JetBrains Mono', 'Fira Code', ui-monospace, monospace"
         font-size="90" font-weight="800" fill="url(#title)">loop-kernel</text>
 
-  <text x="92" y="262" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-        font-size="29" fill="#c3d0e8">the simplest agent loop that <tspan fill="#7ee3b8" font-style="italic" font-weight="600">provably halts</tspan></text>
+  <text x="92" y="244" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+        font-size="28" fill="#c3d0e8">say <tspan fill="#eaf2ff" font-weight="600">“set up a loop”</tspan> — your agent interviews you,</text>
+  <text x="92" y="278" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+        font-size="28" fill="#c3d0e8">then writes a loop that <tspan fill="#7ee3b8" font-style="italic" font-weight="600">provably halts</tspan></text>
 
-  <text x="92" y="296" font-family="'SFMono-Regular', 'JetBrains Mono', ui-monospace, monospace"
-        font-size="15.5" letter-spacing="0.3" fill="#6f83a8">goal · unfakeable verifier · three hard stops · durable memory</text>
+  <text x="92" y="310" font-family="'SFMono-Regular', 'JetBrains Mono', ui-monospace, monospace"
+        font-size="15.5" letter-spacing="0.3" fill="#6f83a8">six questions → /goal · unfakeable check · three hard stops · durable memory</text>
 
   <!-- three hard-stop chips -->
   <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16.5" font-weight="600">
-    <g transform="translate(92,322)">
+    <g transform="translate(92,334)">
       <rect width="142" height="38" rx="19" fill="#0c1730" stroke="#243352"/>
       <circle cx="23" cy="19" r="6" fill="#34d399"/>
       <text x="39" y="25" fill="#d7e1f4">success</text>
     </g>
-    <g transform="translate(246,322)">
+    <g transform="translate(246,334)">
       <rect width="178" height="38" rx="19" fill="#0c1730" stroke="#243352"/>
       <circle cx="23" cy="19" r="6" fill="#f5b945"/>
       <text x="39" y="25" fill="#d7e1f4">no-progress</text>
     </g>
-    <g transform="translate(436,322)">
+    <g transform="translate(436,334)">
       <rect width="108" height="38" rx="19" fill="#0c1730" stroke="#243352"/>
       <circle cx="23" cy="19" r="6" fill="#fb7185"/>
       <text x="39" y="25" fill="#d7e1f4">cap</text>
@@ -101,8 +114,8 @@
   </g>
 
   <!-- author -->
-  <text x="92" y="404" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-        font-size="15" fill="#5d6f93">~110 lines of bash · no dependencies · by Uppify Agency</text>
+  <text x="92" y="408" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+        font-size="15" fill="#5d6f93">~110 lines of bash · no dependencies · AGENTS.md + skill inside · by Uppify Agency</text>
 
   <!-- bottom accent line -->
   <rect x="0" y="436" width="1280" height="4" fill="url(#accent)"/>

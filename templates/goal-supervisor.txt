@@ -1,0 +1,38 @@
+/goal Feature <NAME> is verified-shipped. ONE measurable end state: every nested operational
+loop below reports SATISFIED with its evidence pasted in THIS conversation. A fresh evaluator
+reads the transcript only and runs no tools — an unproven loop never counts. You are the
+SUPERVISOR: you orchestrate the nested loops, you do NOT free-code. Operate at maximum autonomy
+and effort; never pause to ask — record blockers as [TO CONFIRM] and keep going. Before each
+turn read .loop/PROJECT.md and .loop/MEMORY.md; never re-derive a settled rule. Compose these
+skills/plugins: <SKILLS>. Use these MCPs: <MCPS>.
+
+EACH TURN = one supervisor cycle over the NESTED loops. ROUTE: pick the single next loop whose
+predecessors are satisfied (order ARCHITECTURE -> CODING -> VERIFICATION, cycling
+CODING<->VERIFICATION per story). One loop per turn. End every turn pasting the LEDGER
+(loop & story -> status).
+
+> ARCHITECTURE LOOP — explore >=2 options for the goal, weigh trade-offs against the look-alikes
+  in PROJECT.md, name the risks, and document the chosen design + rationale in
+  .loop/ARCHITECTURE.md. SATISFIED: paste the options table + chosen-with-rationale + risk list.
+  GUARD: no code here; every claim tied to a PROJECT.md requirement.
+
+> CODING LOOP (one story per turn, on the <STACK> stack) — for the single next story: write tests
+  that FAIL before and PASS after; implement the smallest change; no new file over 300 lines.
+  SATISFIED: paste BOTH the red and the green output + wc -l of new files. GUARD: never edit
+  existing assertions; no .skip/.only; do not lower coverage; refactor behavior-preserving.
+
+> VERIFICATION LOOP (adversarial, the judge is never the worker) — <VERIF>
+  GUARD: correctness and security, not style; never weaken a check or edit CI to skip a red step.
+
+MEMORY LOOP (every turn) — append to .loop/MEMORY.md: FAIL -> INVESTIGATE -> VERIFY -> DISTILL
+for anything that broke. META-REFLECTION (when a failure domain repeats) — fix it permanently in
+the spec/prompt/tooling and record it so the next turn inherits the fix.
+
+RECURSION INVARIANT — the judge is never the worker: the Verification loop uses fresh spawned
+subagents; this whole goal is closed by the fresh evaluator, never by your self-approval.
+
+DONE only when ARCHITECTURE + every story's CODING + VERIFICATION are SATISFIED with evidence in
+the transcript, every [TO CONFIRM] in PROJECT.md is resolved, and the closing turn pastes a FRESH
+full check run + the final LEDGER. Constraints: edit only under this feature's paths.
+NO-PROGRESS: if two turns produce no diff, stop and report the blocking loop. Or stop after
+<MAX_ITERS> turns.

@@ -1,0 +1,4 @@
+/goal <GOAL> Done when `<CHECK_CMD>` exits 0. Check: paste the command's output in the
+conversation. Constraints: do not modify, skip, or delete tests/assertions to pass; keep the
+diff minimal; if a check must legitimately change, STOP and report instead. Or stop after
+<MAX_ITERS> turns.

@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-# loop init — guided setup. Interviews you about the job, then PRINTS the one
-# thing you actually copy-paste: a filled-in nested supervisor /goal that runs
-# itself, at full power, until it is verified-shipped or a hard stop fires.
+# loop init — the SCRIBE. Interviews you (TTY) or takes the answers as env vars
+# (AI agents), then PRINTS the one thing you actually copy-paste: a filled-in
+# nested supervisor /goal that runs itself until verified-shipped or a hard stop.
+#
+# Two callers, one contract:
+#   · HUMAN in a terminal →  ./loop init [dir]   (guided six-question interview)
+#   · AI AGENT (no TTY)   →  the AGENT asks the six questions in its own
+#     conversation (protocol: AGENTS.md · questions: `loop intake`), then calls:
+#       GOAL="…" NAME="…" STACK="…" LOOK_ALIKES="…" SKILLS="…" MCPS="…" \
+#       REVIEW_METHOD="shell+adversarial" CHECK_CMD="npm test" ./init.sh [dir]
 #
 # The intake captures the six things a real autonomous run needs:
 #   1. Goal / JTBD        what must become TRUE
@@ -13,17 +20,17 @@
 #   6. Review method      how DONE is proven: shell check / browser-MCP / adversarial
 #
 # It writes a tiny .loop/ into the target project (PROJECT.md = the worker's brief,
-# MEMORY.md = the cross-session store, score.sh/loop.env = the autonomous runner),
-# and ends by echoing the ready-to-paste /goal.
+# MEMORY.md = the cross-session store, score.sh/loop.env = the autonomous runner,
+# goal.txt = the /goal for Claude Code, prompt.txt = the same loop as a plain
+# prompt for Codex or any other agent), and ends by echoing the paste-ready /goal.
+# The /goal text itself lives in templates/ — one source of truth for CLI and agents.
 #
 #   loop init [dir]            full rich intake (default)
 #   loop init [dir] --minimal  the original 5-question kernel intake
-#
-# Non-interactive (CI/scripting): pre-set any answer as an env var, e.g.
-#   PROJECT_DIR=. NAME=quote GOAL="..." CHECK_CMD="npm test" REVIEW_METHOD=shell ./init.sh
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 INSTALL_DIR="$(cd "$(dirname "$0")" && pwd)"
+TEMPLATES="$INSTALL_DIR/templates"
 
 # --- arg parsing: optional positional [dir] + --minimal flag ----------------
 MINIMAL=0
@@ -34,6 +41,30 @@ for a in "$@"; do
     *) [ -z "$POS_DIR" ] && POS_DIR="$a" ;;
   esac
 done
+
+# --- no TTY and no answers? teach the contract instead of dying silently ----
+if [ ! -t 0 ] && [ -z "${GOAL:-}" ]; then
+  cat >&2 <<'EOF'
+✗ stdin is not a TTY and no GOAL was provided — the terminal interview cannot run here.
+
+  If you are an AI coding agent: YOU are the interviewer, this script is the scribe.
+    1. Read the six questions:   ./loop intake     (canonical: templates/INTAKE.md)
+    2. Ask the USER in your conversation, one question at a time.
+    3. Re-run with the answers as env vars (anything unset takes its default):
+
+       GOAL="what must be TRUE when done" \
+       NAME="feature-name" STACK="next.js 16, typescript" \
+       LOOK_ALIKES="https://example.com — match the export flow" \
+       SKILLS="none" MCPS="none" \
+       REVIEW_METHOD="shell+adversarial" CHECK_CMD="npm test" \
+       ./init.sh /path/to/project
+
+       minimal: GOAL="…" CHECK_CMD="npm test" ./init.sh /path/to/project --minimal
+
+  Full agent protocol: AGENTS.md
+EOF
+  exit 1
+fi
 
 ask() { # ask VAR "question" "default"
   local var="$1" q="$2" def="${3:-}" cur ans
@@ -50,6 +81,19 @@ ask() { # ask VAR "question" "default"
 }
 
 contains() { case "$2" in *"$1"*) return 0;; *) return 1;; esac; }   # contains NEEDLE HAYSTACK
+
+render() { # render TEMPLATE_FILE — substitute <PLACEHOLDER> tokens from current vars
+  local t; t="$(cat "$1")"
+  t="${t//<NAME>/${NAME:-}}"
+  t="${t//<GOAL>/${GOAL:-}}"
+  t="${t//<STACK>/${STACK:-}}"
+  t="${t//<SKILLS>/${SKILLS:-}}"
+  t="${t//<MCPS>/${MCPS:-}}"
+  t="${t//<VERIF>/${VERIF:-}}"
+  t="${t//<CHECK_CMD>/${CHECK_CMD:-}}"
+  t="${t//<MAX_ITERS>/${MAX_ITERS:-}}"
+  printf '%s\n' "$t"
+}
 
 # ─────────────────────────────────────────────────────────────────────────────
 echo "┌─ loop init ───────────────────────────────────────────────"
@@ -106,16 +150,12 @@ PROMPT_FILE="$LOOP_DIR/GOAL.md"
 MAX_ITERS=$MAX_ITERS
 NOPROGRESS_K=$NOPROGRESS_K
 EOF
-  cat > "$LOOP_DIR/goal.txt" <<EOF
-/goal $GOAL Done when \`$CHECK_CMD\` exits 0. Check: paste the command's output in the
-conversation. Constraints: do not modify, skip, or delete tests/assertions to pass; keep the
-diff minimal; if a check must legitimately change, STOP and report instead. Or stop after
-$MAX_ITERS turns.
-EOF
+  render "$TEMPLATES/goal-minimal.txt" > "$LOOP_DIR/goal.txt"
+  sed 's|^/goal ||' "$LOOP_DIR/goal.txt" > "$LOOP_DIR/prompt.txt"
   echo
   echo "✓ Configured  $LOOP_DIR  (minimal)"
   echo "▶ Autonomous: $INSTALL_DIR/loop run \"$PROJECT_DIR\""
-  echo "▶ Or paste into Claude Code:"
+  echo "▶ Or paste into Claude Code (Codex/other agents: .loop/prompt.txt):"
   sed 's/^/    /' "$LOOP_DIR/goal.txt"
   exit 0
 fi
@@ -233,46 +273,9 @@ NOPROGRESS_K=$NOPROGRESS_K
 EOF
 
 # ── 4) THE OUTPUT — the filled-in nested supervisor /goal, ready to paste ─────
-cat > "$LOOP_DIR/goal.txt" <<EOF
-/goal Feature $NAME is verified-shipped. ONE measurable end state: every nested operational
-loop below reports SATISFIED with its evidence pasted in THIS conversation. A fresh evaluator
-reads the transcript only and runs no tools — an unproven loop never counts. You are the
-SUPERVISOR: you orchestrate the nested loops, you do NOT free-code. Operate at maximum autonomy
-and effort; never pause to ask — record blockers as [TO CONFIRM] and keep going. Before each
-turn read .loop/PROJECT.md and .loop/MEMORY.md; never re-derive a settled rule. Compose these
-skills/plugins: $SKILLS. Use these MCPs: $MCPS.
-
-EACH TURN = one supervisor cycle over the NESTED loops. ROUTE: pick the single next loop whose
-predecessors are satisfied (order ARCHITECTURE -> CODING -> VERIFICATION, cycling
-CODING<->VERIFICATION per story). One loop per turn. End every turn pasting the LEDGER
-(loop & story -> status).
-
-> ARCHITECTURE LOOP — explore >=2 options for the goal, weigh trade-offs against the look-alikes
-  in PROJECT.md, name the risks, and document the chosen design + rationale in
-  .loop/ARCHITECTURE.md. SATISFIED: paste the options table + chosen-with-rationale + risk list.
-  GUARD: no code here; every claim tied to a PROJECT.md requirement.
-
-> CODING LOOP (one story per turn, on the $STACK stack) — for the single next story: write tests
-  that FAIL before and PASS after; implement the smallest change; no new file over 300 lines.
-  SATISFIED: paste BOTH the red and the green output + wc -l of new files. GUARD: never edit
-  existing assertions; no .skip/.only; do not lower coverage; refactor behavior-preserving.
-
-> VERIFICATION LOOP (adversarial, the judge is never the worker) — $VERIF
-  GUARD: correctness and security, not style; never weaken a check or edit CI to skip a red step.
-
-MEMORY LOOP (every turn) — append to .loop/MEMORY.md: FAIL -> INVESTIGATE -> VERIFY -> DISTILL
-for anything that broke. META-REFLECTION (when a failure domain repeats) — fix it permanently in
-the spec/prompt/tooling and record it so the next turn inherits the fix.
-
-RECURSION INVARIANT — the judge is never the worker: the Verification loop uses fresh spawned
-subagents; this whole goal is closed by the fresh evaluator, never by your self-approval.
-
-DONE only when ARCHITECTURE + every story's CODING + VERIFICATION are SATISFIED with evidence in
-the transcript, every [TO CONFIRM] in PROJECT.md is resolved, and the closing turn pastes a FRESH
-full check run + the final LEDGER. Constraints: edit only under this feature's paths.
-NO-PROGRESS: if two turns produce no diff, stop and report the blocking loop. Or stop after
-$MAX_ITERS turns.
-EOF
+# Rendered from templates/goal-supervisor.txt — the single source of truth.
+render "$TEMPLATES/goal-supervisor.txt" > "$LOOP_DIR/goal.txt"
+sed 's|^/goal ||' "$LOOP_DIR/goal.txt" > "$LOOP_DIR/prompt.txt"
 
 # Guard the official /goal limit (≤ 4000 chars).
 GOAL_CHARS=$(wc -c < "$LOOP_DIR/goal.txt" | tr -d ' ')
@@ -282,18 +285,21 @@ echo "✓ Configured  $LOOP_DIR"
 echo "    PROJECT.md   the worker's brief (goal · look-alikes · stack · skills · MCPs · review)"
 echo "    MEMORY.md    the cross-session memory store"
 echo "    score.sh     shell scorer for the autonomous runner ($CHECK_CMD)"
-echo "    goal.txt     the paste-ready /goal below"
+echo "    goal.txt     the paste-ready /goal below (Claude Code)"
+echo "    prompt.txt   the same loop as a plain prompt (Codex / any other agent)"
 [ -n "$MCP_HINT" ] && { echo; echo "  ⚠ browser review chosen but no chrome MCP detected. First run:"; echo "      $MCP_HINT"; }
 if [ "$GOAL_CHARS" -gt 4000 ]; then
   echo "  ⚠ generated /goal is $GOAL_CHARS chars (> 4000 limit) — trim look-alikes/skills, the rest lives in PROJECT.md."
 fi
 echo
-echo "▶ Two ways to run it — pick one:"
+echo "▶ Three ways to run it — pick one:"
 echo
 echo "  A) Inside Claude Code (recommended — nested loops, self-verify, max power):"
 echo "     paste the /goal below. Turn on auto mode so it runs solo."
 echo
-echo "  B) Headless autonomous runner (one claude -p per iteration, shell-scored):"
+echo "  B) Codex or any other agent: hand it .loop/prompt.txt (same loop, plain prompt)."
+echo
+echo "  C) Headless autonomous runner (one claude -p per iteration, shell-scored):"
 echo "     $INSTALL_DIR/loop run \"$PROJECT_DIR\""
 echo
 echo "─────────────────────────  COPY FROM HERE  ─────────────────────────"
