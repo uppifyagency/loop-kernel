@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# loop — the one entrypoint. Point it at your project, give it a goal, walk away.
+#
+#   loop init [dir]     guided setup: writes <project>/.loop/ (goal, scorer, config, /goal)
+#   loop run  [dir]     drive the real agent on <project> until the check passes or it stops
+#   loop goal [dir]     print the ready-to-paste /goal for Claude Code
+#   loop ledger         show the durable memory of the most recent run
+#   loop demo           prove the engine on a bundled example (no model, no cost)
+#   loop help
+set -euo pipefail
+INSTALL="$(cd "$(dirname "$0")" && pwd)"
+cmd="${1:-help}"; [ $# -gt 0 ] && shift || true
+
+case "$cmd" in
+  init)
+    exec "$INSTALL/init.sh" "$@"
+    ;;
+
+  run)
+    PROJECT="${1:-$(pwd)}"; PROJECT="$(cd "$PROJECT" && pwd)"
+    env_file="$PROJECT/.loop/loop.env"
+    [ -f "$env_file" ] || { echo "No .loop config in $PROJECT — run: loop init \"$PROJECT\"" >&2; exit 1; }
+    # shellcheck disable=SC1090
+    . "$env_file"
+    echo "▶ loop run  project=$PROJECT  worker=claude  (Ctrl-C to stop)"
+    TASK_DIR="$TASK_DIR" SCORER="$SCORER" PROMPT_FILE="$PROMPT_FILE" \
+      WORKER_CMD="$INSTALL/workers/claude.sh" \
+      MAX_ITERS="$MAX_ITERS" NOPROGRESS_K="$NOPROGRESS_K" \
+      bash "$INSTALL/kernel.sh"
+    ;;
+
+  goal)
+    PROJECT="${1:-$(pwd)}"; PROJECT="$(cd "$PROJECT" && pwd)"
+    f="$PROJECT/.loop/goal.txt"
+    [ -f "$f" ] || { echo "No .loop config in $PROJECT — run: loop init \"$PROJECT\"" >&2; exit 1; }
+    cat "$f"
+    ;;
+
+  ledger)
+    exec "$INSTALL/last-ledger.sh"
+    ;;
+
+  demo)
+    ex="${1:-roman}"
+    echo "▶ loop demo: proving the engine on examples/$ex (deterministic stub, no model)"
+    "$INSTALL/reset.sh" "examples/$ex" >/dev/null
+    if [ "$ex" = "multi" ]; then
+      TASK_DIR="$INSTALL/examples/multi" WORKER_CMD="$INSTALL/workers/stub-stepwise.sh" bash "$INSTALL/kernel.sh"
+    else
+      TASK_DIR="$INSTALL/examples/roman" WORKER_CMD="$INSTALL/workers/stub-solve-on-2.sh" bash "$INSTALL/kernel.sh"
+    fi
+    ;;
+
+  help|--help|-h|*)
+    sed -n '2,9p' "$INSTALL/loop" | sed 's/^# \{0,1\}//'
+    ;;
+esac
