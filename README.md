@@ -1,13 +1,14 @@
 <p align="center">
-  <img src="assets/hero.svg" alt="loop-kernel — the simplest AI coding-agent loop that provably halts. Loop engineering, goal, verifier, three hard stops, durable memory." width="100%">
+  <img src="assets/hero.svg" alt="loop-kernel — the simplest AI coding-agent loop that provably halts. Loop engineering: goal, an unfakeable verifier, three hard stops, durable memory." width="100%">
 </p>
 
 <h1 align="center">loop-kernel</h1>
 
 <p align="center">
-  <b>Point it at your repo, give it a goal, walk away.</b><br>
-  The simplest autonomous AI-agent loop that <i>provably halts</i> — goal · an unfakeable verifier ·
-  three hard stops · durable memory.<br>
+  <b>Answer six questions. Get a self-driving loop that provably halts.</b><br>
+  <code>loop init</code> interviews you about the job, then prints a ready-to-paste <code>/goal</code> —
+  nested loops, an unfakeable check, three hard stops, durable memory — that runs itself until it's
+  verified-shipped or a guardrail stops it.<br>
   No framework, no dependencies, ~110 lines of bash.
 </p>
 
@@ -25,10 +26,10 @@
 
 The romantic version of loops is a thousand agents building your company overnight. The
 production version is that you write the loops, and **most of the work is making them stop.**
-`loop-kernel` packages that: a Ralph-style loop with the three hard stops and an objective,
-unfakeable check wired in — driven by a guided one-command setup.
+`loop-kernel` packages that: one guided command turns your intent into a loop with three hard
+stops and an objective, unfakeable check wired in.
 
-## Use it on your project
+## One command. It interviews you, then writes the loop.
 
 ```bash
 git clone https://github.com/uppifyagency/loop-kernel
@@ -37,23 +38,49 @@ cd loop-kernel
 ```bash
 ./loop init /path/to/your/project
 ```
-```bash
-./loop run /path/to/your/project
+
+`loop init` asks the six things a real autonomous run actually needs:
+
+| | It asks | Why it matters |
+|---|---|---|
+| 1 | **Goal / JTBD** | the one end state that must become true |
+| 2 | **Look-alikes** | reference URLs + what to match or avoid |
+| 3 | **Stack** | frameworks, languages, key libraries |
+| 4 | **Skills / plugins** | the packaged workflows to compose (names or GitHub URLs) |
+| 5 | **MCPs** | servers the loop may use — it shows `claude mcp list` first |
+| 6 | **Review method** | how DONE is proven: `shell` check · `browser` (chrome-devtools MCP, :9222) · `adversarial` reviewer — pick one or combine |
+
+Then it writes a tiny `.loop/` into your project (`PROJECT.md` = the brief the worker re-reads every
+turn, `MEMORY.md` = the cross-session store, `score.sh` = the objective scorer) and **ends by printing
+the one thing you copy-paste**: a filled-in nested supervisor `/goal`.
+
+```
+─────────────────────────  COPY FROM HERE  ─────────────────────────
+/goal Feature <name> is verified-shipped. … You are the SUPERVISOR: you orchestrate the
+nested loops, you do NOT free-code. Operate at maximum autonomy and effort …
+  > ARCHITECTURE LOOP — explore >=2 options, weigh trade-offs vs the look-alikes …
+  > CODING LOOP (one story/turn, on the <stack>) — tests FAIL before & PASS after …
+  > VERIFICATION LOOP (adversarial) — run the shell check and paste its output; drive
+    <url> through the chrome-devtools MCP on port 9222; spawn a FRESH reviewer over the diff …
+  MEMORY LOOP (every turn) — FAIL → INVESTIGATE → VERIFY → DISTILL …
+DONE only when ARCHITECTURE + every story's CODING + VERIFICATION are SATISFIED … Or stop after 120 turns.
+──────────────────────────  TO HERE  ───────────────────────────────
 ```
 
-`loop init` asks four things — your **project**, the one-line **goal**, the **check command that
-defines “done”** (`npm test`, `pytest -q`, `npm run check`, `go test ./...` — anything that exits
-`0` when finished), and the **caps** — then writes a tiny `.loop/` into your project. `loop run`
-then drives the agent (`claude -p`) iteration after iteration, re-running your real check each
-time, until it passes or a guardrail stops it. Close your laptop.
+The review method you pick **shapes the VERIFICATION loop**: choose `browser` and it wires in a
+live self-verify that drives real Chrome via [`chrome-devtools-mcp`](https://github.com/ChromeDevTools/chrome-devtools-mcp);
+choose `adversarial` and it spawns a fresh reviewer over `git diff`. The rich context (look-alikes,
+scope, legal) lives in `PROJECT.md`, so the `/goal` stays under the official 4,000-character limit.
 
-Prefer to stay inside Claude Code? `loop init` also prints a ready-to-paste **`/goal`**:
+### Two ways to run it (both printed at the end)
 
-```
-/goal <your goal> Done when `npm test` exits 0. Check: paste the command's output in the
-conversation. Constraints: do not modify, skip, or delete tests to pass; keep the diff minimal.
-Or stop after 20 turns.
-```
+- **A — inside Claude Code (recommended):** paste the `/goal`, turn on auto mode, walk away. The
+  nested loops, the browser self-verify, and the durable memory all run in-session, at full power.
+- **B — headless runner:** `./loop run /path/to/your/project` drives the agent (`claude -p`) one
+  iteration at a time, re-running your real shell check each time until it passes or a guardrail fires.
+
+> Just want the bare check, no orchestration? `./loop init <dir> --minimal` is the original
+> five-question intake (goal + check command + caps).
 
 ## See it work first (30 seconds, no model, no cost)
 
@@ -120,12 +147,12 @@ first-class here, and all three are tested:
 ## Architecture
 
 ```
-  you ──init: goal + check──▶  loop / kernel.sh  ──spawns──▶  worker  (swappable)
-                                  │   ▲                       claude -p | any CLI
-                      your check  │   │ score
-                       command ──▶ .loop/score.sh ──runs──▶  YOUR real tests / build / lint
-                                  │
-                                  └──▶  runs/<id>/LEDGER.md   (durable memory)
+  you ──init: 6-question intake──▶  loop / kernel.sh  ──spawns──▶  worker  (swappable)
+                                       │   ▲                       claude -p | any CLI
+                           your check  │   │ score
+                            command ──▶ .loop/score.sh ──runs──▶  YOUR real tests / build / lint
+                                       │
+                                       └──▶  runs/<id>/LEDGER.md   (durable memory)
 ```
 
 The worker is stochastic and swappable; the **control system is fixed and deterministic.** That
@@ -151,9 +178,9 @@ This repo is deliberate about what it claims:
 
 - **Verified (mechanics):** an external loop driving a CLI agent; the three hard stops; a script
   verifier so the check is *run*, never trusted. Demonstrated by running the kernel.
-- **Opinionated (design, unproven at scale):** larger layered "supervisor / N-loop"
-  architectures. Research notes, not load-bearing claims — and intentionally **not** what this
-  kernel ships. See [docs/](docs/).
+- **Opinionated (design):** the **nested supervisor `/goal`** that `loop init` generates, and the
+  larger layered "supervisor / N-loop" architecture behind it. It is a coherent operating
+  framework built on verified primitives — not a benchmarked SOTA claim. See [docs/](docs/).
 
 ## Documentation
 
@@ -161,13 +188,17 @@ This repo is deliberate about what it claims:
   prompts for every phase of code development, from a multi-source, adversarially-verified research
   run cross-checked against official Claude docs. *(IT, with English prompts.)*
 - **[Supervisor-Loop Orchestration](docs/SUPERVISOR-LOOP-ORCHESTRATION.md)** — the layered
-  "Russian-doll" design, a single-`/goal` nested variant, and an honest verified-vs-synthesized
-  split. *(IT.)*
+  "Russian-doll" design `loop init` draws from: the INTAKE, the operational-loop template, and an
+  honest verified-vs-synthesized split. *(IT.)*
 
 ## FAQ
 
+**What exactly does `loop init` produce?** A `.loop/` folder (`PROJECT.md`, `MEMORY.md`, `score.sh`,
+`loop.env`) and a printed, paste-ready nested `/goal`. Paste it into Claude Code, or run it headless
+with `./loop run`.
+
 **How is this different from a Ralph loop?** Same external-loop spirit, but the three hard stops,
-an objective unfakeable check, durable memory, and a guided setup are first-class — not bolted on.
+an objective unfakeable check, durable memory, and a guided rich intake are first-class — not bolted on.
 
 **Does it only work with Claude?** No. The worker is any script that edits files. `workers/claude.sh`
 is one example; point `WORKER_CMD` at your own.
@@ -186,7 +217,8 @@ you give it — that honesty is the point.
 
 - More reference tasks with objective scorers (harder, multi-step, real repos).
 - A `/goal`-evaluator worker variant (model-judged, for non-deterministic goals).
-- Optional second-opinion verification stage (a fresh reviewer subagent).
+- A first-class browser-MCP scorer for the headless runner (today the browser self-verify runs
+  inside the pasted `/goal`).
 
 ## Credits
 

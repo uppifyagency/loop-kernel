@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # loop — the one entrypoint. Point it at your project, give it a goal, walk away.
 #
-#   loop init [dir]     guided setup: writes <project>/.loop/ (goal, scorer, config, /goal)
+#   loop init [dir]     interview (goal · look-alikes · stack · skills · MCPs · review),
+#                       then print a paste-ready nested /goal. add --minimal for the bare check.
 #   loop run  [dir]     drive the real agent on <project> until the check passes or it stops
 #   loop goal [dir]     print the ready-to-paste /goal for Claude Code
 #   loop ledger         show the durable memory of the most recent run
@@ -52,6 +53,6 @@ case "$cmd" in
     ;;
 
   help|--help|-h|*)
-    sed -n '2,9p' "$INSTALL/loop" | sed 's/^# \{0,1\}//'
+    sed -n '2,10p' "$INSTALL/loop" | sed 's/^# \{0,1\}//'
     ;;
 esac
