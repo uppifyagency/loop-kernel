@@ -9,24 +9,26 @@ skills/plugins: <SKILLS>. Use these MCPs: <MCPS>.
 EACH TURN = one supervisor cycle over the NESTED loops. ROUTE: pick the single next loop whose
 predecessors are satisfied (order ARCHITECTURE -> CODING -> VERIFICATION, cycling
 CODING<->VERIFICATION per story). One loop per turn. End every turn pasting the LEDGER
-(loop & story -> status).
+(loop & story -> status + a numeric progress score, e.g. green-tests/total or criteria-met/total).
 
-> ARCHITECTURE LOOP — explore >=2 options for the goal, weigh trade-offs against the look-alikes
-  in PROJECT.md, name the risks, and document the chosen design + rationale in
-  .loop/ARCHITECTURE.md. SATISFIED: paste the options table + chosen-with-rationale + risk list.
-  GUARD: no code here; every claim tied to a PROJECT.md requirement.
+> ARCHITECTURE LOOP — explore K>=3 INDEPENDENT options (spawn fresh subagents), weigh trade-offs
+  vs the look-alikes in PROJECT.md, name risks; pick the winner by the criteria, NOT taste;
+  record choice + rationale + rejected options in .loop/ARCHITECTURE.md. SATISFIED: paste the
+  options table + chosen-with-rationale + risk list. GUARD: no code; every claim tied to a story.
 
-> CODING LOOP (one story per turn, on the <STACK> stack) — for the single next story: write tests
-  that FAIL before and PASS after; implement the smallest change; no new file over 300 lines.
-  SATISFIED: paste BOTH the red and the green output + wc -l of new files. GUARD: never edit
-  existing assertions; no .skip/.only; do not lower coverage; refactor behavior-preserving.
+> CODING LOOP (one story per turn, on the <STACK> stack) — for the single next story: tests FAIL
+  before and PASS after; smallest change; no new file over 300 lines. GATE IN 2 STAGES: run the
+  FAST gate (typecheck/lint/compile) first, full check only if it passes. If the story's check
+  stays red 2 turns, spawn K=3 fresh attempts and keep the best-scoring one. SATISFIED: paste
+  red + green output (both gates) + wc -l of new files. GUARD: never edit existing assertions;
+  no .skip/.only; do not lower coverage; refactor behavior-preserving.
 
 > VERIFICATION LOOP (adversarial, the judge is never the worker) — <VERIF>
   GUARD: correctness and security, not style; never weaken a check or edit CI to skip a red step.
 
-MEMORY LOOP (every turn) — append to .loop/MEMORY.md: FAIL -> INVESTIGATE -> VERIFY -> DISTILL
-for anything that broke. META-REFLECTION (when a failure domain repeats) — fix it permanently in
-the spec/prompt/tooling and record it so the next turn inherits the fix.
+MEMORY LOOP (every turn) — append to .loop/MEMORY.md: FAIL[type: invalid|contract|check-red|
+regression|flaky] -> INVESTIGATE -> VERIFY -> DISTILL for anything that broke. META-REFLECTION
+(when a failure type repeats) — fix it permanently in the spec/prompt/tooling and record it.
 
 RECURSION INVARIANT — the judge is never the worker: the Verification loop uses fresh spawned
 subagents; this whole goal is closed by the fresh evaluator, never by your self-approval.
@@ -34,5 +36,6 @@ subagents; this whole goal is closed by the fresh evaluator, never by your self-
 DONE only when ARCHITECTURE + every story's CODING + VERIFICATION are SATISFIED with evidence in
 the transcript, every [TO CONFIRM] in PROJECT.md is resolved, and the closing turn pastes a FRESH
 full check run + the final LEDGER. Constraints: edit only under this feature's paths.
-NO-PROGRESS: if two turns produce no diff, stop and report the blocking loop. Or stop after
-<MAX_ITERS> turns.
+NO-PROGRESS: if two turns produce no diff OR the progress score is flat, stop and report the
+blocking loop. BUDGET: cap any single loop at 8 turns and best-of-K at K=3; a loop over budget
+with a flat score is stopped and reported. Or stop after <MAX_ITERS> turns total.
